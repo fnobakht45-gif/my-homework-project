@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Weather — Vanilla</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Weather App</h1>
+    </header>
+
+    <div class="container">
+      <h2 id="city-and-current-time"></h2>
+
+      <form id="search-form">
+        <input
+          type="text"
+          id="city-input"
+          placeholder="Enter a city..."
+          required
+        />
+        <button type="submit">Search</button>
+      </form>
+
+      <div id="result" style="margin-top: 20px; font-size: 20px"></div>
+
+      <!-- نمونه‌ی آب و هوا -->
+      <section>
+        <h2 id="weather-city">Paris</h2>
+        <p id="weather-temp"></p>
+        <p id="currentDate"></p>
+
+        <!-- این div اکنون کاملاً درست و ولید است -->
+        <div id="weather-sample" style="margin-top: 12px">
+          <span id="currentDate"></span>
+          <span id="rain-text"> moderate rain</span><br />
+          <span>Humidity:</span> <span class="temperature-1"> 87%</span>,
+          <span>Wind:</span> <span class="temperature-1"> 7.2 km/h</span>
+        </div>
+
+      </section>
+    </div>
+    <section class="forecast">
+      <div class="day">
+        <div>Sat</div>
+        <div>🌧️</div>
+        <br />
+        <div class="temperature-1"><strong>15°</strong> 12°</div>
+      </div>
+
+      <div class="day">
+        <div>Sun</div>
+        <div>🌧️</div>
+        <br />
+        <div class="temperature-1"><strong>16°</strong> 13°</div>
+      </div>
+
+      <div class="day">
+        <div>Mon</div>
+        <div>🌧️</div>
+        <br />
+        <div class="temperature-1"><strong>13°</strong> 11°</div>
+      </div>
+
+      <div class="day">
+        <div>Tue</div>
+        <div>☁️</div>
+        <br />
+        <div class="temperature-1"><strong>16°</strong> 11°</div>
+      </div>
+
+      <div class="day">
+        <div>Wed</div>
+        <div>☁️</div>
+        <br />
+        <div class="temperature-1"><strong>14°</strong> 12°</div>
+      </div>
+    </section>
+  </div>
+
+    <footer>
+      <p>
+        This project was coded by
+        <a href="fnobakht45@gmail.com" target="_blank">Faeze Nobakht</a> and is
+        <a href="#" target="_blank"> on GitHub</a> and
+        <a href="#" target="_blank">hosted on Netlify</a>
+      </p>
+    </footer>
+
+    <!-- اسکریپت آخر body قرار دارد تا از بارگذاری DOM اطمینان حاصل شود -->
+    <script src="script.js"></script>
+  </body>
+</html>
