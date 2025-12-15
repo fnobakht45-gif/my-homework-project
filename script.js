@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let weatherTemp = document.getElementById("weather-temp");
   let currentDateElement = document.getElementById("currentDate");
 
-  let rainText = document.getElementById("rain-text");
+  let description = document.getElementById("description");
   let humidityEl = document.getElementById("humidity");
   let windSpeedEl = document.getElementById("wind-speed");
   let weatherIcon = document.getElementById("weather-icon");
@@ -28,6 +28,30 @@ document.addEventListener("DOMContentLoaded", function () {
   if (currentDateElement) {
     currentDateElement.innerHTML = formatDate(new Date());
   }
+  function getWeatherDescriptionEN(code) {
+  if (code === 0) return "Clear sky";
+  if (code === 1) return "Mainly clear";
+  if (code === 2) return "Partly cloudy";
+  if (code === 3) return "Overcast";
+
+  if (code === 45 || code === 48) return "Fog";
+
+  if (code === 51) return "Light drizzle";
+  if (code === 53) return "Moderate drizzle";
+  if (code === 55) return "Dense drizzle";
+
+  if (code === 61) return "Slight rain";
+  if (code === 63) return "Moderate rain";
+  if (code === 65) return "Heavy rain";
+
+  if (code === 71) return "Slight snow";
+  if (code === 73) return "Moderate snow";
+  if (code === 75) return "Heavy snow";
+
+  if (code === 95) return "Thunderstorm";
+
+  return "Unknown weather";
+}
 
   // تبدیل نام شهر به مختصات
   function getCoordinates(cityName) {
@@ -44,11 +68,12 @@ document.addEventListener("DOMContentLoaded", function () {
         };
       });
   }
+  
 
   // گرفتن وضعیت هوا
   function getWeather(cityName) {
     weatherTemp.textContent = "Loading...";
-    if (rainText) rainText.textContent = "Loading...";
+    if (description) description.textContent = "Loading...";
     if (humidityEl) humidityEl.textContent = "Loading...";
     if (windSpeedEl) windSpeedEl.textContent = "Loading...";
     if (weatherIcon) weatherIcon.src = "icons/default.png";
@@ -64,8 +89,11 @@ document.addEventListener("DOMContentLoaded", function () {
           weatherTemp.textContent = "No weather data";
           return;
         }
-        
-weatherTemp.textContent = `${data.current_weather.temperature} °C`;
+       let code = data.current_weather.weathercode;
+       let description = getWeatherDescriptionEN(code);
+
+currentDateElement.textContent =
+  `${formatDate(new Date())} | ${description}`;
 
 // سرعت باد
 if (windSpeedEl && data.current_weather?.windspeed !== undefined) {
@@ -78,8 +106,8 @@ if (humidityEl && data.hourly?.relative_humidity_2m) {
 }
 
 // بارش
-if (rainText && data.hourly?.precipitation) {
-  rainText.textContent = `${data.hourly.precipitation[0]} mm`;
+if (description && data.hourly?.precipitation) {
+  description.textContent = `${data.hourly.precipitation[0]} mm`;
 }
      
        
@@ -88,8 +116,6 @@ if (rainText && data.hourly?.precipitation) {
         let weatherIcon = document.getElementById("weather-icon");
 
 // داخل then(data => { })
-
-let code = data.current_weather.weathercode;
 
 if (weatherIcon) {
   if (code === 0) weatherIcon.src = "icons/sun.png";
@@ -102,7 +128,7 @@ if (weatherIcon) {
       .catch((err) => {
         console.error(err);
         weatherTemp.textContent = "Error loading temperature";
-        if (rainText) rainText.textContent = "Error";
+        if (description) description.textContent = "Error";
         if (humidityEl) humidityEl.textContent = "Error";
         if (windSpeedEl) windSpeedEl.textContent = "Error";
         if (weatherIcon) weatherIcon.src = "icons/default.png";
