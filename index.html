@@ -14,36 +14,29 @@
     <div class="container">
       <h2 id="city-and-current-time"></h2>
 
-      <form id="search-form">
-        <input
-          type="text"
-          id="city-input"
-          placeholder="Enter a city..."
-          required
-        />
-        <button type="submit">Search</button>
+      <form class="form" id="search-form">
+        <input type="text" id="city-input" placeholder="Enter a city..."required/>
+        <button class="search-form-button" type="submit">Search</button>
       </form>
 
-      <div id="result" style="margin-top: 20px; font-size: 20px"></div>
+      <div id="result"></div>
 
       <!-- نمونه‌ی آب و هوا -->
       <section>
-        <div>
-        <h2 id="weather-city">Paris</h2>
-        <p id="weather-temp"></p>
-        <p id="currentDate"></p>
-
+         <h2 id="weather-city"></h2>
+        <img id="weather-icon">
+        <p class="main-weather" id="weather-temp"></p>
+        
+       
         <!-- این div اکنون کاملاً درست و ولید است -->
         <div id="weather-sample" style="margin-top: 12px">
-          <span id="currentDate"></span>
-          <span id="rain-text"> moderate rain</span><br />
-          <span>Humidity:</span> <span class="temperature-1"> 87%</span>,
-          <span>Wind:</span> <span class="temperature-1"> 7.2 km/h</span>
+          <span id="currentDate"></span>,
+          <span id="rain-text"></span><br />
+          <span>Humidity:</span> <span id="humidity" class="temperature-1"></span>,
+          <span>Wind:</span> <span id="wind-speed" class="temperature-1"></span>
           </div>
-        </div>
+       </section>
 
-      </section>
-    </div>
     <section class="forecast">
       <div class="day">
         <div>Sat</div>
@@ -90,6 +83,7 @@
         <a href="https://voluble-kitsune-46fff6.netlify.app/" target="_blank">hosted on Netlify</a>
       </p>
     </footer>
+  </div>
 
     <!-- اسکریپت آخر body قرار دارد تا از بارگذاری DOM اطمینان حاصل شود -->
     <script src="script.js"></script>

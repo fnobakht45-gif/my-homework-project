@@ -9,19 +9,18 @@ document.addEventListener("DOMContentLoaded", function () {
   let weatherTemp = document.getElementById("weather-temp");
   let currentDateElement = document.getElementById("currentDate");
 
+  let rainText = document.getElementById("rain-text");
+  let humidityEl = document.getElementById("humidity");
+  let windSpeedEl = document.getElementById("wind-speed");
+  let weatherIcon = document.getElementById("weather-icon");
+
   function formatDate(date) {
     let minutes = date.getMinutes();
     let hours = date.getHours();
     if (minutes < 10) minutes = `0${minutes}`;
     if (hours < 10) hours = `0${hours}`;
     const days = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
+      "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
     ];
     return `${days[date.getDay()]} ${hours}:${minutes}`;
   }
@@ -30,10 +29,9 @@ document.addEventListener("DOMContentLoaded", function () {
     currentDateElement.innerHTML = formatDate(new Date());
   }
 
-  // 1) تبدیل نام شهر به مختصات (Geocoding)
+  // تبدیل نام شهر به مختصات
   function getCoordinates(cityName) {
     let url = `https://geocoding-api.open-meteo.com/v1/search?name=${cityName}&count=1`;
-
     return fetch(url)
       .then((res) => res.json())
       .then((data) => {
@@ -47,14 +45,17 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   }
 
-  // 2) گرفتن دما از Open-Meteo
+  // گرفتن وضعیت هوا
   function getWeather(cityName) {
     weatherTemp.textContent = "Loading...";
+    if (rainText) rainText.textContent = "Loading...";
+    if (humidityEl) humidityEl.textContent = "Loading...";
+    if (windSpeedEl) windSpeedEl.textContent = "Loading...";
+    if (weatherIcon) weatherIcon.src = "icons/default.png";
 
     getCoordinates(cityName)
       .then((coords) => {
-        let url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current_weather=true`;
-
+        let url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current_weather=true&hourly=precipitation,relative_humidity_2m,windspeed_10m`;
         return fetch(url);
       })
       .then((res) => res.json())
@@ -63,13 +64,42 @@ document.addEventListener("DOMContentLoaded", function () {
           weatherTemp.textContent = "No weather data";
           return;
         }
+        
+weatherTemp.textContent = `${data.current_weather.temperature} °C`;
 
-        let temp = data.current_weather.temperature;
-        weatherTemp.textContent = `${temp} °C`;
+// سرعت باد
+if (windSpeedEl && data.current_weather?.windspeed !== undefined) {
+  windSpeedEl.textContent =`${data.current_weather.windspeed} km/h`;
+}
+
+// رطوبت
+if (humidityEl && data.hourly?.relative_humidity_2m) {
+  humidityEl.textContent = `${data.hourly.relative_humidity_2m[0]}%`;
+}
+
+// بارش
+if (rainText && data.hourly?.precipitation) {
+  rainText.textContent = `${data.hourly.precipitation[0]} mm`;
+}
+     
+       
+        // تعیین آیکون بر اساس وضعیت هوا (simplified)
+        let weatherCode = data.current_weather.weathercode; // Open-Meteo uses codes
+        if (weatherIcon) {
+          if ([0, 1].includes(weatherCode)) weatherIcon.src = "icons/sun.png";      // آفتابی
+          else if ([2, 3].includes(weatherCode)) weatherIcon.src = "icons/cloud.png"; // ابری
+          else if ([61, 63, 65].includes(weatherCode)) weatherIcon.src = "icons/rain.png"; // باران
+          else if ([71, 73, 75].includes(weatherCode)) weatherIcon.src = "icons/snow.png"; // برف
+          else weatherIcon.src = "icons/default.png"; // بقیه
+        }
       })
       .catch((err) => {
         console.error(err);
         weatherTemp.textContent = "Error loading temperature";
+        if (rainText) rainText.textContent = "Error";
+        if (humidityEl) humidityEl.textContent = "Error";
+        if (windSpeedEl) windSpeedEl.textContent = "Error";
+        if (weatherIcon) weatherIcon.src = "icons/default.png";
       });
   }
 
