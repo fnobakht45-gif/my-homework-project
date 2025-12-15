@@ -85,13 +85,19 @@ if (rainText && data.hourly?.precipitation) {
        
         // تعیین آیکون بر اساس وضعیت هوا (simplified)
         let weatherCode = data.current_weather.weathercode; // Open-Meteo uses codes
-        if (weatherIcon) {
-          if ([0, 1].includes(weatherCode)) weatherIcon.src = "icons/sun.png";      // آفتابی
-          else if ([2, 3].includes(weatherCode)) weatherIcon.src = "icons/cloud.png"; // ابری
-          else if ([61, 63, 65].includes(weatherCode)) weatherIcon.src = "icons/rain.png"; // باران
-          else if ([71, 73, 75].includes(weatherCode)) weatherIcon.src = "icons/snow.png"; // برف
-          else weatherIcon.src = "icons/default.png"; // بقیه
-        }
+        let weatherIcon = document.getElementById("weather-icon");
+
+// داخل then(data => { })
+
+let code = data.current_weather.weathercode;
+
+if (weatherIcon) {
+  if (code === 0) weatherIcon.src = "icons/sun.png";
+  else if ([1,2,3].includes(code)) weatherIcon.src = "icons/cloud.png";
+  else if ([61,63,65].includes(code)) weatherIcon.src = "icons/rain.png";
+  else if ([71,73,75].includes(code)) weatherIcon.src = "icons/snow.png";
+  else weatherIcon.src = "icons/default.png";
+}
       })
       .catch((err) => {
         console.error(err);
