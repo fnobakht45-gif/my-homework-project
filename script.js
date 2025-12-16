@@ -8,8 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let weatherCity = document.getElementById("weather-city");
   let weatherTemp = document.getElementById("weather-temp");
   let currentDateElement = document.getElementById("currentDate");
-
-  let description = document.getElementById("description");
+  let descriptionE1 = document.getElementById("description");
   let humidityEl = document.getElementById("humidity");
   let windSpeedEl = document.getElementById("wind-speed");
   let weatherIcon = document.getElementById("weather-icon");
@@ -73,7 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // گرفتن وضعیت هوا
   function getWeather(cityName) {
     weatherTemp.textContent = "Loading...";
-    if (description) description.textContent = "Loading...";
+    if (descriptionE1) descriptionE1.textContent = "Loading...";
     if (humidityEl) humidityEl.textContent = "Loading...";
     if (windSpeedEl) windSpeedEl.textContent = "Loading...";
     if (weatherIcon) weatherIcon.src = "icons/default.png";
@@ -90,10 +89,16 @@ document.addEventListener("DOMContentLoaded", function () {
           return;
         }
        let code = data.current_weather.weathercode;
-       let description = getWeatherDescriptionEN(code);
+       let weatherDescText= getWeatherDescriptionEN(code);
 
-currentDateElement.textContent =
-  `${formatDate(new Date())} | ${description}`;
+  if(currentDateElement)
+    {currentDateElement.textContent =
+  `${formatDate(new Date())} | ${weatherDescText}`;}
+
+
+  if (weatherTemp && data.current_weather?.temperature !== undefined) {
+          weatherTemp.textContent = `${data.current_weather.temperature} °C`;
+        }
 
 // سرعت باد
 if (windSpeedEl && data.current_weather?.windspeed !== undefined) {
@@ -106,9 +111,9 @@ if (humidityEl && data.hourly?.relative_humidity_2m) {
 }
 
 // بارش
-if (description && data.hourly?.precipitation) {
-  description.textContent = `${data.hourly.precipitation[0]} mm`;
-}
+if (precipitationEl && data.hourly?.precipitation) {
+          precipitationEl.textContent = `${data.hourly.precipitation[0]} mm`;
+        }
      
        
         // تعیین آیکون بر اساس وضعیت هوا (simplified)
