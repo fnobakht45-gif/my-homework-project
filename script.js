@@ -12,17 +12,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const humidityEl = document.getElementById("humidity");
   const windSpeedEl = document.getElementById("wind-speed");
   const weatherIcon = document.getElementById("weather-icon");
-  const precipitationEl = document.getElementById("precipitation");
 
-  function formatDate(date) {
-    let minutes = date.getMinutes();
-    let hours = date.getHours();
-    if (minutes < 10) minutes = `0${minutes}`;
-    if (hours < 10) hours = `0${hours}`;
-    const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-    return `${days[date.getDay()]} ${hours}:${minutes}`;
-  }
-
+  // تابع تبدیل کد هوا به متن انگلیسی
   function getWeatherDescriptionEN(code) {
     if (code === 0) return "Clear sky";
     if (code === 1) return "Mainly clear";
@@ -42,63 +33,77 @@ document.addEventListener("DOMContentLoaded", function () {
     return "Unknown weather";
   }
 
+  // تابع فرمت تاریخ و ساعت
+  function formatDate(date) {
+    let minutes = date.getMinutes();
+    let hours = date.getHours();
+    if (minutes < 10) minutes = `0${minutes}`;
+    if (hours < 10) hours = `0${hours}`;
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    return `${days[date.getDay()]} ${hours}:${minutes}`;
+  }
+
+  // نمایش تاریخ فعلی
+  if (currentDateElement) {
+    currentDateElement.textContent = FormData(new Date());
+  }
+
+  // تبدیل نام شهر به مختصات
   function getCoordinates(cityName) {
     const url = `https://geocoding-api.open-meteo.com/v1/search?name=${cityName}&count=1`;
     return fetch(url)
       .then(res => res.json())
       .then(data => {
         if (!data.results || data.results.length === 0) throw new Error("City not found");
-        return { lat: data.results[0].latitude, lon: data.results[0].longitude };
+        return {
+          lat: data.results[0].latitude,
+          lon: data.results[0].longitude,
+        };
       });
   }
 
+  // گرفتن وضعیت هوا و آپدیت UI
   function getWeather(cityName) {
-    // مقداردهی اولیه
+    // قبل از fetch Loading نشان بده
     if (weatherTemp) weatherTemp.textContent = "Loading...";
     if (descriptionE1) descriptionE1.textContent = "Loading...";
     if (humidityEl) humidityEl.textContent = "Loading...";
     if (windSpeedEl) windSpeedEl.textContent = "Loading...";
-    if (precipitationEl) precipitationEl.textContent = "--";
     if (weatherIcon) weatherIcon.src = "icons/default.png";
 
     getCoordinates(cityName)
       .then(coords => {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current_weather=true&hourly=precipitation,relative_humidity_2m,windspeed_10m`;
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current_weather=true&hourly=relative_humidity_2m,windspeed_10m`;
         return fetch(url);
       })
       .then(res => res.json())
       .then(data => {
-        console.log("API data:" ,data);
         if (!data.current_weather) {
           if (weatherTemp) weatherTemp.textContent = "No weather data";
+          if (descriptionE1) descriptionE1.textContent = "No data";
           return;
         }
 
         const code = data.current_weather.weathercode;
         const weatherDescText = getWeatherDescriptionEN(code);
 
-        if (currentDateElement)
-          currentDateElement.textContent = `${formatDate(new Date())} , ${weatherDescText}`;
+        // متن پیش‌بینی
+        if (descriptionE1) descriptionE1.textContent = weatherDescText;
 
-        if (weatherTemp && data.current_weather.temperature !== undefined)
+        // دما
+        if (weatherTemp && data.current_weather.temperature !== undefined) {
           weatherTemp.textContent = `${data.current_weather.temperature} °C`;
+        }
 
-        if (windSpeedEl && data.current_weather.windspeed !== undefined)
+        // سرعت باد
+        if (windSpeedEl && data.current_weather.windspeed !== undefined) {
           windSpeedEl.textContent = `${data.current_weather.windspeed} km/h`;
+        }
 
-        if (humidityEl && data.hourly?.relative_humidity_2m)
+        // رطوبت
+        if (humidityEl && data.hourly?.relative_humidity_2m) {
           humidityEl.textContent = `${data.hourly.relative_humidity_2m[0]}%`;
-
-        // بارش ساعت فعلی
-       if (precipitationEl && data.hourly?.precipitation && data.hourly?.time) {
-  const now = new Date();
-  const currentHourISO = now.toISOString().slice(0,13); // YYYY-MM-DDTHH
-  const index = data.hourly.time.findIndex(t => t.startsWith(currentHourISO));
-  const precipitation = (index !== -1 && data.hourly.precipitation[index] !== undefined)
-                        ? data.hourly.precipitation[index]
-                        : 0;
-  precipitationEl.textContent = `${precipitation} mm`;
-}
+        }
 
         // آیکون هوا
         if (weatherIcon) {
@@ -108,6 +113,11 @@ document.addEventListener("DOMContentLoaded", function () {
           else if (code >= 71 && code <= 75) weatherIcon.src = "icons/snow.png";
           else weatherIcon.src = "icons/default.png";
         }
+
+        // تاریخ و پیش‌بینی
+        if (currentDateElement) {
+          currentDateElement.textContent = `${formatDate(new Date())}, ${weatherDescText}`;
+        }
       })
       .catch(error => {
         console.error(error);
@@ -115,11 +125,11 @@ document.addEventListener("DOMContentLoaded", function () {
         if (descriptionE1) descriptionE1.textContent = "Error";
         if (humidityEl) humidityEl.textContent = "Error";
         if (windSpeedEl) windSpeedEl.textContent = "Error";
-        if (precipitationEl) precipitationEl.textContent = "--";
         if (weatherIcon) weatherIcon.src = "icons/default.png";
       });
   }
 
+  // وقتی فرم submit شد
   form.addEventListener("submit", function (event) {
     event.preventDefault();
     const cityName = cityInput.value.trim();
