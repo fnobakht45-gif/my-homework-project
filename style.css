@@ -114,6 +114,7 @@ footer {
   
 }
 
+
 #city-and-time {
   font-size: 24px;
   margin-bottom: 20px;
@@ -129,4 +130,16 @@ button {
   padding: 10px 15px;
   cursor: pointer;
   font-size: 16px;
+}
+#weather-icon {
+  width: 40px;
+  height: 40px;
+  vertical-align: middle;
+}
+
+span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-direction: row-reverse; /* آیکون سمت راست */
 }
