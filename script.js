@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let humidityEl = document.getElementById("humidity");
   let windSpeedEl = document.getElementById("wind-speed");
   let weatherIcon = document.getElementById("weather-icon");
+  let precipitationEl = document.getElementById("precipitation");
 
   function formatDate(date) {
     let minutes = date.getMinutes();
@@ -93,7 +94,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if(currentDateElement)
     {currentDateElement.textContent =
-  `${formatDate(new Date())} | ${weatherDescText}`;}
+  `${formatDate(new Date())} , ${weatherDescText}`;}
 
 
   if (weatherTemp && data.current_weather?.temperature !== undefined) {
@@ -111,14 +112,15 @@ if (humidityEl && data.hourly?.relative_humidity_2m) {
 }
 
 // بارش
-if (precipitationEl && data.hourly?.precipitation) {
-          precipitationEl.textContent = `${data.hourly.precipitation[0]} mm`;
-        }
+if (precipitationEl && data.hourly?.precipitation && data.hourly?.time) {
+  const now = new Date();
+  const currentHour = now.getHours();
+  precipitationEl.textContent = `${data.hourly.precipitation[currentHour]} mm`;
+}
      
        
         // تعیین آیکون بر اساس وضعیت هوا (simplified)
         let weatherCode = data.current_weather.weathercode; // Open-Meteo uses codes
-        let weatherIcon = document.getElementById("weather-icon");
 
 // داخل then(data => { })
 
@@ -133,7 +135,7 @@ if (weatherIcon) {
       .catch((err) => {
         console.error(err);
         weatherTemp.textContent = "Error loading temperature";
-        if (description) description.textContent = "Error";
+        if (descriptionE1) descriptionE1.textContent = "Error";
         if (humidityEl) humidityEl.textContent = "Error";
         if (windSpeedEl) windSpeedEl.textContent = "Error";
         if (weatherIcon) weatherIcon.src = "icons/default.png";
