@@ -3,159 +3,132 @@ console.clear();
 document.addEventListener("DOMContentLoaded", function () {
   console.log("✅ DOM آماده است — اسکریپت اجرا شد");
 
-  let form = document.getElementById("search-form");
-  let cityInput = document.getElementById("city-input");
-  let weatherCity = document.getElementById("weather-city");
-  let weatherTemp = document.getElementById("weather-temp");
-  let currentDateElement = document.getElementById("currentDate");
-  let descriptionE1 = document.getElementById("description");
-  let humidityEl = document.getElementById("humidity");
-  let windSpeedEl = document.getElementById("wind-speed");
-  let weatherIcon = document.getElementById("weather-icon");
-  let precipitationEl = document.getElementById("precipitation");
+  const form = document.getElementById("search-form");
+  const cityInput = document.getElementById("city-input");
+  const weatherCity = document.getElementById("weather-city");
+  const weatherTemp = document.getElementById("weather-temp");
+  const currentDateElement = document.getElementById("currentDate");
+  const descriptionE1 = document.getElementById("description");
+  const humidityEl = document.getElementById("humidity");
+  const windSpeedEl = document.getElementById("wind-speed");
+  const weatherIcon = document.getElementById("weather-icon");
+  const precipitationEl = document.getElementById("precipitation");
 
   function formatDate(date) {
     let minutes = date.getMinutes();
     let hours = date.getHours();
     if (minutes < 10) minutes = `0${minutes}`;
     if (hours < 10) hours = `0${hours}`;
-    const days = [
-      "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
-    ];
+    const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
     return `${days[date.getDay()]} ${hours}:${minutes}`;
   }
 
-  if (currentDateElement) {
-    currentDateElement.innerHTML = formatDate(new Date());
-  }
   function getWeatherDescriptionEN(code) {
-  if (code === 0) return "Clear sky";
-  if (code === 1) return "Mainly clear";
-  if (code === 2) return "Partly cloudy";
-  if (code === 3) return "Overcast";
+    if (code === 0) return "Clear sky";
+    if (code === 1) return "Mainly clear";
+    if (code === 2) return "Partly cloudy";
+    if (code === 3) return "Overcast";
+    if (code === 45 || code === 48) return "Fog";
+    if (code === 51) return "Light drizzle";
+    if (code === 53) return "Moderate drizzle";
+    if (code === 55) return "Dense drizzle";
+    if (code === 61) return "Slight rain";
+    if (code === 63) return "Moderate rain";
+    if (code === 65) return "Heavy rain";
+    if (code === 71) return "Slight snow";
+    if (code === 73) return "Moderate snow";
+    if (code === 75) return "Heavy snow";
+    if (code === 95) return "Thunderstorm";
+    return "Unknown weather";
+  }
 
-  if (code === 45 || code === 48) return "Fog";
-
-  if (code === 51) return "Light drizzle";
-  if (code === 53) return "Moderate drizzle";
-  if (code === 55) return "Dense drizzle";
-
-  if (code === 61) return "Slight rain";
-  if (code === 63) return "Moderate rain";
-  if (code === 65) return "Heavy rain";
-
-  if (code === 71) return "Slight snow";
-  if (code === 73) return "Moderate snow";
-  if (code === 75) return "Heavy snow";
-
-  if (code === 95) return "Thunderstorm";
-
-  return "Unknown weather";
-}
-
-  // تبدیل نام شهر به مختصات
   function getCoordinates(cityName) {
-    let url = `https://geocoding-api.open-meteo.com/v1/search?name=${cityName}&count=1`;
+    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${cityName}&count=1`;
     return fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        if (!data.results || data.results.length === 0) {
-          throw new Error("City not found");
-        }
-        return {
-          lat: data.results[0].latitude,
-          lon: data.results[0].longitude,
-        };
+      .then(res => res.json())
+      .then(data => {
+        if (!data.results || data.results.length === 0) throw new Error("City not found");
+        return { lat: data.results[0].latitude, lon: data.results[0].longitude };
       });
   }
-  
 
-  // گرفتن وضعیت هوا
   function getWeather(cityName) {
-    weatherTemp.textContent = "Loading...";
+    // مقداردهی اولیه
+    if (weatherTemp) weatherTemp.textContent = "Loading...";
     if (descriptionE1) descriptionE1.textContent = "Loading...";
     if (humidityEl) humidityEl.textContent = "Loading...";
     if (windSpeedEl) windSpeedEl.textContent = "Loading...";
+    if (precipitationEl) precipitationEl.textContent = "--";
     if (weatherIcon) weatherIcon.src = "icons/default.png";
 
     getCoordinates(cityName)
-      .then((coords) => {
-        let url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current_weather=true&hourly=precipitation,relative_humidity_2m,windspeed_10m`;
+      .then(coords => {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current_weather=true&hourly=precipitation,relative_humidity_2m,windspeed_10m`;
         return fetch(url);
       })
-      .then((res) => res.json())
-      .then((data) => {
+      .then(res => res.json())
+      .then(data => {
+        console.log("API data:" ,data);
         if (!data.current_weather) {
-          weatherTemp.textContent = "No weather data";
+          if (weatherTemp) weatherTemp.textContent = "No weather data";
           return;
         }
-       let code = data.current_weather.weathercode;
-       let weatherDescText= getWeatherDescriptionEN(code);
 
-  if(currentDateElement)
-    {currentDateElement.textContent =
-  `${formatDate(new Date())} , ${weatherDescText}`;}
+        const code = data.current_weather.weathercode;
+        const weatherDescText = getWeatherDescriptionEN(code);
 
+        if (currentDateElement)
+          currentDateElement.textContent = `${formatDate(new Date())} , ${weatherDescText}`;
 
-  if (weatherTemp && data.current_weather?.temperature !== undefined) {
+        if (weatherTemp && data.current_weather.temperature !== undefined)
           weatherTemp.textContent = `${data.current_weather.temperature} °C`;
-        }
 
-// سرعت باد
-if (windSpeedEl && data.current_weather?.windspeed !== undefined) {
-  windSpeedEl.textContent =`${data.current_weather.windspeed} km/h`;
-}
+        if (windSpeedEl && data.current_weather.windspeed !== undefined)
+          windSpeedEl.textContent = `${data.current_weather.windspeed} km/h`;
 
-// رطوبت
-if (humidityEl && data.hourly?.relative_humidity_2m) {
-  humidityEl.textContent = `${data.hourly.relative_humidity_2m[0]}%`;
-}
+        if (humidityEl && data.hourly?.relative_humidity_2m)
+          humidityEl.textContent = `${data.hourly.relative_humidity_2m[0]}%`;
 
-// بارش
-if (precipitationEl && data.hourly?.precipitation && data.hourly?.time) {
+        // بارش ساعت فعلی
+       if (precipitationEl && data.hourly?.precipitation && data.hourly?.time) {
   const now = new Date();
-  const currentHour = now.getHours();
-  precipitationEl.textContent = `${data.hourly.precipitation[currentHour]} mm`;
+  const currentHourISO = now.toISOString().slice(0,13); // YYYY-MM-DDTHH
+  const index = data.hourly.time.findIndex(t => t.startsWith(currentHourISO));
+  const precipitation = (index !== -1 && data.hourly.precipitation[index] !== undefined)
+                        ? data.hourly.precipitation[index]
+                        : 0;
+  precipitationEl.textContent = `${precipitation} mm`;
 }
-     
-       
-        // تعیین آیکون بر اساس وضعیت هوا (simplified)
-        let weatherCode = data.current_weather.weathercode; // Open-Meteo uses codes
 
-// داخل then(data => { })
-
-if (weatherIcon) {
-  if (code === 0) weatherIcon.src = "icons/sun.png";
-  else if ([1,2,3].includes(code)) weatherIcon.src = "icons/cloud.png";
-  else if ([61,63,65].includes(code)) weatherIcon.src = "icons/rain.png";
-  else if ([71,73,75].includes(code)) weatherIcon.src = "icons/snow.png";
-  else weatherIcon.src = "icons/default.png";
-}
+        // آیکون هوا
+        if (weatherIcon) {
+          if (code === 0) weatherIcon.src = "icons/sun.png";
+          else if ([1,2,3].includes(code)) weatherIcon.src = "icons/cloud.png";
+          else if ((code >= 51 && code <= 65) || (code >= 80 && code <= 82)) weatherIcon.src = "icons/rain.png";
+          else if (code >= 71 && code <= 75) weatherIcon.src = "icons/snow.png";
+          else weatherIcon.src = "icons/default.png";
+        }
       })
-      .catch((err) => {
-        console.error(err);
-        weatherTemp.textContent = "Error loading temperature";
+      .catch(error => {
+        console.error(error);
+        if (weatherTemp) weatherTemp.textContent = "Error loading temperature";
         if (descriptionE1) descriptionE1.textContent = "Error";
         if (humidityEl) humidityEl.textContent = "Error";
         if (windSpeedEl) windSpeedEl.textContent = "Error";
+        if (precipitationEl) precipitationEl.textContent = "--";
         if (weatherIcon) weatherIcon.src = "icons/default.png";
       });
   }
 
   form.addEventListener("submit", function (event) {
     event.preventDefault();
-
-    let cityName = cityInput.value.trim();
+    const cityName = cityInput.value.trim();
     if (!cityName) return;
 
-    weatherCity.textContent = cityName;
-
-    if (currentDateElement) {
-      currentDateElement.innerHTML = formatDate(new Date());
-    }
+    if (weatherCity) weatherCity.textContent = cityName;
+    if (currentDateElement) currentDateElement.textContent = formatDate(new Date());
 
     getWeather(cityName);
-
     cityInput.value = "";
   });
 });
