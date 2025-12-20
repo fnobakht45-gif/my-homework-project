@@ -1,3 +1,4 @@
+
 console.clear();
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -12,6 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const humidityEl = document.getElementById("humidity");
   const windSpeedEl = document.getElementById("wind-speed");
   const weatherIcon = document.getElementById("weather-icon");
+  const forecastSection = document.querySelector(".forecast");
 
   // تابع تبدیل کد هوا به متن انگلیسی
   function getWeatherDescriptionEN(code) {
@@ -45,7 +47,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // نمایش تاریخ فعلی
   if (currentDateElement) {
-    currentDateElement.textContent = FormData(new Date());
+    currentDateElement.textContent = formatDate(new Date());
   }
 
   // تبدیل نام شهر به مختصات
@@ -64,16 +66,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // گرفتن وضعیت هوا و آپدیت UI
   function getWeather(cityName) {
-    // قبل از fetch Loading نشان بده
+    // نمایش Loading
     if (weatherTemp) weatherTemp.textContent = "Loading...";
     if (descriptionE1) descriptionE1.textContent = "Loading...";
     if (humidityEl) humidityEl.textContent = "Loading...";
     if (windSpeedEl) windSpeedEl.textContent = "Loading...";
     if (weatherIcon) weatherIcon.src = "icons/default.png";
+    if (forecastSection) forecastSection.innerHTML = "Loading...";
 
     getCoordinates(cityName)
       .then(coords => {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current_weather=true&hourly=relative_humidity_2m,windspeed_10m`;
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&hourly=relative_humidity_2m,windspeed_10m&timezone=auto`;
         return fetch(url);
       })
       .then(res => res.json())
@@ -81,31 +84,24 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!data.current_weather) {
           if (weatherTemp) weatherTemp.textContent = "No weather data";
           if (descriptionE1) descriptionE1.textContent = "No data";
+          if (forecastSection) forecastSection.innerHTML = "";
           return;
         }
 
         const code = data.current_weather.weathercode;
         const weatherDescText = getWeatherDescriptionEN(code);
 
-        // متن پیش‌بینی
+        // وضعیت فعلی
         if (descriptionE1) descriptionE1.textContent = weatherDescText;
-
-        // دما
-        if (weatherTemp && data.current_weather.temperature !== undefined) {
-          weatherTemp.textContent = `${data.current_weather.temperature} °C`;
-        }
-
-        // سرعت باد
+        if (weatherTemp) weatherTemp.textContent = `${data.current_weather.temperature} °C`;
         if (windSpeedEl && data.current_weather.windspeed !== undefined) {
           windSpeedEl.textContent = `${data.current_weather.windspeed} km/h`;
         }
-
-        // رطوبت
         if (humidityEl && data.hourly?.relative_humidity_2m) {
-          humidityEl.textContent = `${data.hourly.relative_humidity_2m[0]}%`;
+          const hourIndex = new Date().getHours();
+          humidityEl.textContent = `${data.hourly.relative_humidity_2m[hourIndex]}%`;
         }
 
-        // آیکون هوا
         if (weatherIcon) {
           if (code === 0) weatherIcon.src = "icons/sun.png";
           else if ([1,2,3].includes(code)) weatherIcon.src = "icons/cloud.png";
@@ -114,10 +110,39 @@ document.addEventListener("DOMContentLoaded", function () {
           else weatherIcon.src = "icons/default.png";
         }
 
-        // تاریخ و پیش‌بینی
-        if (currentDateElement) {
-          currentDateElement.textContent = `${formatDate(new Date())}, ${weatherDescText}`;
+
+        // پیش‌بینی 6 روز آینده
+        if (data.daily && forecastSection) {
+          forecastSection.innerHTML = "";
+          const dailyTimes = data.daily.time;
+          const tempMax = data.daily.temperature_2m_max;
+          const tempMin = data.daily.temperature_2m_min;
+          const weatherCodes = data.daily.weathercode;
+
+          for (let i = 1; i < 7; i++) {
+            const date = new Date(dailyTimes[i]);
+            const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
+
+            let icon = "🌤️";
+            const code = weatherCodes[i];
+            if (code === 0) icon = "☀️";
+            else if ([1,2,3].includes(code)) icon = "☁️";
+            else if ((code >= 51 && code <= 65) || (code >= 80 && code <= 82)) icon = "🌧️";
+            else if (code >= 71 && code <= 75) icon = "❄️";
+            else if (code === 95) icon = "⛈️";
+
+            const dayDiv = document.createElement("div");
+            dayDiv.classList.add("day");
+            dayDiv.innerHTML = `
+              <div>${dayName}</div>
+              <div>${icon}</div>
+              <br />
+              <div class="temperature-1"><strong>${Math.round(tempMax[i])}°</strong> ${Math.round(tempMin[i])}°</div>
+            `;
+            forecastSection.appendChild(dayDiv);
+          }
         }
+
       })
       .catch(error => {
         console.error(error);
@@ -126,6 +151,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (humidityEl) humidityEl.textContent = "Error";
         if (windSpeedEl) windSpeedEl.textContent = "Error";
         if (weatherIcon) weatherIcon.src = "icons/default.png";
+        if (forecastSection) forecastSection.innerHTML = "Error loading forecast";
       });
   }
 
@@ -140,5 +166,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     getWeather(cityName);
     cityInput.value = "";
+    cityInput.focus();
   });
 });

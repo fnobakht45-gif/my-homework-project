@@ -7,7 +7,7 @@ body {
 }
 
 form {
-  max-width: 500px;
+  max-width: 700px;
   width: 80%;
   display: flex;
   gap: 10px;
@@ -26,7 +26,8 @@ form {
 }
 #weather-sample {
   margin-top: 20px;
-  font-size: 18px;
+  font-size: 14px;
+  color: #777;
 }
 
 header {
@@ -50,6 +51,7 @@ input[type="text"] {
   border: 1px solid #ddd;
   border-radius: 6px;
 }
+
 button {
   padding: 12px 20px;
   background: #885df1;
@@ -67,9 +69,9 @@ h2 {
 .main-weather {
 display: flex;
 justify-content: flex-end;   
-align-items: center;                        
-margin-top: 0px;   
-font-size: 28px;       
+align-items: right;                          
+font-size: 36px;  
+flex-direction: row-reverse;     
 }
 
 .temperature {
@@ -89,15 +91,16 @@ font-size: 28px;
 }
 
 .temperature-1 {
-   color:red;
+   color:rgb(170, 63, 63);
 }
 
 footer {
   text-align: center;
-  margin-top: 25px;
+  margin-top: 0px;
   padding: 20px;
   font-size: 13px;
   color: #777;
+
 }
 .container {
   max-width: 500px;
@@ -107,10 +110,11 @@ footer {
   background: white;
   max-width: 600px;
   margin: 45px auto;
-  box-shadow: 0 30px 50px rgba(65, 50, 100, 0.08);
+  box-shadow: 0 30px 50px rgba(24, 24, 27, 0.08);
   border-radius: 16px;
   padding: 30px;
   justify-content: space-between;
+  color: #353333;
   
 }
 
